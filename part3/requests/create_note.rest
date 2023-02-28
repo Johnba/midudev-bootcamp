@@ -1,0 +1,17 @@
+POST http://localhost:3001/api/notes HTTP/1.1
+content-type: application/json
+
+{
+ "content": "Nuevo contenido... HTML and JS is easy",
+ "important" : true
+}
+
+
+###
+
+POST http://localhost:3001/api/notes HTTP/1.1
+content-type: application/json
+
+{
+ 
+}
