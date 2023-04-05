@@ -2,12 +2,28 @@
 // const http = require('http') //importar modulo de forma con NodeJS
 // import http from 'http' //importar modulo con nuevo soporte EMCscript
 
-// Ejemplo co Express
+// Ejemplo con Express
 const express = require('express')
 // const { r } = require('tar')
+const cors = require('cors')
 const app = express()
+const logger = require('./loggerMiddleware')
+
+app.use(cors()) // por defecto cualquier origen puede hacer peticiones, Cors no es la mejor opcion para eso se pueden usar Autenticacion por Tokens
 
 app.use(express.json()) // https://github.com/expressjs/body-parser
+
+app.use(logger)
+
+//
+// app.use((request, response, next) => {
+//   console.log('--------- JB --------')
+//   console.log('request method: ', request.method)
+//   console.log('request path: ', request.path)
+//   console.log('request body: ', request.body)
+//   console.log('---------------------')
+//   next()
+// })
 
 let notes = [
   {
@@ -86,11 +102,25 @@ app.post('/api/notes', (request, response) => {
   // response.json(note)
 })
 
+// Si no se encuentra la ruta mostrar error 404
+app.use((request, response) => {
+  // Aqui se puede hacer un log de errores
+  // console.log(response.path)
+
+  response.status(404).json({
+    error: 'Not found'
+  })
+})
+
 // const PORT = 3001 //Puerto 80 (443 para https) es el defecto de los websites
 // app.listen(PORT)
 // console.log(`Server running on port ${PORT}`)
 
-const PORT = 3001 // Puerto 80 (443 para https) es el defecto de los websites
+// const PORT = 3001 // Puerto 80 (443 para https) es el defecto de los websites
+
+// Puerto de variable de entorno 'process.env.PORT' que la pone automaticamente Heroku o el servidor
+const PORT = process.env.PORT || 3001
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
