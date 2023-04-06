@@ -19,3 +19,11 @@ mongoose.connect(connectionString, {
   .catch(err => {
     console.log('Error connecting to MongoDB: ', err.message)
   })
+
+// en caso de algun error de conexion, se ejecuta este codigo
+process.on('uncaughtException', (err) => {
+  console.log('Uncaught Exception. Shutting down...')
+  console.log(err.name, err.message)
+  // process.exit(1)
+  mongoose.connection.disconnect()
+})
