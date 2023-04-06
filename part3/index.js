@@ -2,6 +2,9 @@
 // const http = require('http') //importar modulo de forma con NodeJS
 // import http from 'http' //importar modulo con nuevo soporte EMCscript
 
+// Ejecutar variables de entorno, ver archivo .env
+require('dotenv').config()
+
 // Ejecutar conexion a la base de datos, ver archivo mongo.js
 require('./mongo')
 
