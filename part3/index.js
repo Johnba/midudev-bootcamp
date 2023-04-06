@@ -2,12 +2,16 @@
 // const http = require('http') //importar modulo de forma con NodeJS
 // import http from 'http' //importar modulo con nuevo soporte EMCscript
 
+// Ejecutar conexion a la base de datos, ver archivo mongo.js
+require('./mongo')
+
 // Ejemplo con Express
 const express = require('express')
 // const { r } = require('tar')
 const cors = require('cors')
 const app = express()
 const logger = require('./loggerMiddleware')
+const Note = require('./models/Note') // cargamos el modelo de datos
 
 app.use(cors()) // por defecto cualquier origen puede hacer peticiones, Cors no es la mejor opcion para eso se pueden usar Autenticacion por Tokens
 
@@ -25,26 +29,28 @@ app.use(logger)
 //   next()
 // })
 
-let notes = [
-  {
-    id: 1,
-    content: 'HTML and JS is easy ',
-    date: '2019-05-30T17:30:31.098Z',
-    important: true
-  },
-  {
-    id: 2,
-    content: 'Browser can execute only Javascript',
-    date: '2019-05-30T18:39:34.091Z',
-    important: false
-  },
-  {
-    id: 3,
-    content: 'GET and POST are the most important methods of HTTP protocol',
-    date: '2019-05-30T19:20:14.298Z',
-    important: true
-  }
-]
+let notes = []
+
+// let notes = [
+//   {
+//     id: 1,
+//     content: 'HTML and JS is easy ',
+//     date: '2019-05-30T17:30:31.098Z',
+//     important: true
+//   },
+//   {
+//     id: 2,
+//     content: 'Browser can execute only Javascript',
+//     date: '2019-05-30T18:39:34.091Z',
+//     important: false
+//   },
+//   {
+//     id: 3,
+//     content: 'GET and POST are the most important methods of HTTP protocol',
+//     date: '2019-05-30T19:20:14.298Z',
+//     important: true
+//   }
+// ]
 
 // const app = http.createServer((request, response) => {
 //   response.writeHead(200, { 'Content-Type': 'application/json' })
@@ -52,7 +58,9 @@ let notes = [
 // })
 
 app.get('/api/notes', (request, response) => {
-  response.json(notes)
+  Note.find({}).then(notes => {
+    response.json(notes)
+  })
 })
 
 app.get('/api/notes/:id', (request, response) => {
