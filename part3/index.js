@@ -15,6 +15,8 @@ const cors = require('cors')
 const app = express()
 const logger = require('./loggerMiddleware')
 const Note = require('./models/Note') // cargamos el modelo de datos
+const notFound = require('./middleware/notFound')
+const handleErrors = require('./middleware/handleErrors')
 
 app.use(cors()) // por defecto cualquier origen puede hacer peticiones, Cors no es la mejor opcion para eso se pueden usar Autenticacion por Tokens
 
@@ -108,7 +110,8 @@ app.put('/api/notes/:id', (request, response, next) => {
 app.delete('/api/notes/:id', (request, response, next) => {
   const { id } = request.params
 
-  Note.findByIdAndRemove(id).then(result => {
+  // Note.findByIdAndRemove(id).then(result => {
+  Note.findByIdAndDelete(id).then(() => {
     response.status(204).end()
   }).catch(err => {
     next(err)
@@ -140,20 +143,11 @@ app.post('/api/notes', (request, response, next) => {
   })
 })
 
-app.use((request, response, next) => {
-  response.status(404).end()
-})
+// Middleware not found page
+app.use(notFound)
 
 // Middleware para manejar errores
-app.use((error, request, response, next) => {
-  console.log(error) // esto se puede enviar a un servicio de logs
-
-  if (error.name === 'CastError') {
-    response.status(400).send({ error: 'malformatted id' })
-  } else {
-    response.status(500).end()
-  }
-})
+app.use(handleErrors)
 
 // const PORT = 3001 //Puerto 80 (443 para https) es el defecto de los websites
 // app.listen(PORT)
