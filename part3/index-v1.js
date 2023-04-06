@@ -32,6 +32,8 @@ app.use(logger)
 //   next()
 // })
 
+let notes = []
+
 // let notes = [
 //   {
 //     id: 1,
@@ -58,65 +60,32 @@ app.use(logger)
 //   response.end(JSON.stringify(notes)) //'Hello World'
 // })
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World</h1>')
-})
-
 app.get('/api/notes', (request, response) => {
   Note.find({}).then(notes => {
     response.json(notes)
   })
 })
 
-// Buscar Nota por ID
-app.get('/api/notes/:id', (request, response, next) => {
-  const { id } = request.params
+app.get('/api/notes/:id', (request, response) => {
+  const id = Number(request.params.id)
+  const note = notes.find(note => note.id === id)
 
-  Note.findById(id).then(note => {
-    if (note) {
-      return response.json(note)
-    } else {
-      response.status(404).end()
-    }
-  }).catch(err => {
-    // console.log(err)
-    // response.status(400).end()
-    next(err) // ir al middleware de majejo de errores
-  })
-})
-
-// Editar Nota por ID
-app.put('/api/notes/:id', (request, response, next) => {
-  const { id } = request.params
-  const note = request.body
-
-  const newNoteInfo = {
-    content: note.content,
-    important: note.important
+  if (note) {
+    response.json(note)
+  } else {
+    response.status(404).end()
   }
-
-  Note.findByIdAndUpdate(id, newNoteInfo, { new: true }) // El parametro {new:true} forza a mostrar en el result el ultimo valor guardado
-    .then(result => {
-      // response.status(200).end()
-      response.json(result)
-    }).catch(err => {
-      next(err)
-    })
 })
 
-// Eliminar Nota por ID
-app.delete('/api/notes/:id', (request, response, next) => {
-  const { id } = request.params
-
-  Note.findByIdAndRemove(id).then(result => {
-    response.status(204).end()
-  }).catch(err => {
-    next(err)
-  })
+app.delete('/api/notes/:id', (request, response) => {
+  const id = Number(request.params.id)
+  // console.log({id})
+  notes = notes.filter(note => note.id !== id)
+  // console.log({note})
+  response.status(204).end()
 })
 
-// Guardar Nota
-app.post('/api/notes', (request, response, next) => {
+app.post('/api/notes', (request, response) => {
   const note = request.body
 
   if (!note || !note.content) {
@@ -125,34 +94,33 @@ app.post('/api/notes', (request, response, next) => {
     })
   }
 
-  const newNote = Note({
+  const ids = notes.map(note => note.id)
+  const maxId = Math.max(...ids)
+
+  const newNote = {
+    id: maxId + 1,
     content: note.content,
-    date: new Date().toISOString(),
-    important: typeof note.important !== 'undefined' ? note.important : false
-  })
-
-  newNote.save().then(savedNote => {
-    response.json('Nota guardada!', savedNote)
-  }).catch(err => {
-    // console.log(err)
-    // response.status(500).end()
-    next(err)
-  })
-})
-
-app.use((request, response, next) => {
-  response.status(404).end()
-})
-
-// Middleware para manejar errores
-app.use((error, request, response, next) => {
-  console.log(error) // esto se puede enviar a un servicio de logs
-
-  if (error.name === 'CastError') {
-    response.status(400).send({ error: 'malformatted id' })
-  } else {
-    response.status(500).end()
+    important: typeof note.important !== 'undefined' ? note.important : false,
+    date: new Date().toISOString()
   }
+
+  notes = [...notes, newNote]
+  // notes = notes.concat(newNote)
+
+  response.status(201).json(newNote)
+
+  // console.log(note)
+  // response.json(note)
+})
+
+// Si no se encuentra la ruta mostrar error 404
+app.use((request, response) => {
+  // Aqui se puede hacer un log de errores
+  // console.log(response.path)
+
+  response.status(404).json({
+    error: 'Not found'
+  })
 })
 
 // const PORT = 3001 //Puerto 80 (443 para https) es el defecto de los websites
